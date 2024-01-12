@@ -762,6 +762,12 @@ func (r *RKE2ConfigReconciler) generateAndStoreToken(ctx context.Context, scope 
 		Type: clusterv1.ClusterSecretType,
 	}
 
+	if err := r.Client.Get(ctx, client.ObjectKeyFromObject(secret), secret); err == nil {
+		return string(secret.Data["value"]), nil
+	} else if !apierrors.IsNotFound(err) {
+		return "", err
+	}
+
 	if err := r.createOrUpdateSecretFromObject(ctx, *secret, scope.Logger, "token", *scope.Config); err != nil {
 		return "", err
 	}
