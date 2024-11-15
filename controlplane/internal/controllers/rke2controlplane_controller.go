@@ -1056,10 +1056,11 @@ func (r *RKE2ControlPlaneReconciler) reconcilePreTerminateHook(ctx context.Conte
 			log.Info("Skip forwarding etcd leadership, because there is no other control plane Machine without a deletionTimestamp")
 		}
 
-		// Note: Removing the etcd member will lead to the etcd and the kube-apiserver Pod on the Machine shutting down.
-		if err := workloadCluster.RemoveEtcdMemberForMachine(ctx, deletingMachine); err != nil {
-			return ctrl.Result{}, errors.Wrapf(err, "failed to remove etcd member for deleting Machine %s", klog.KObj(deletingMachine))
-		}
+		log.Info("Skipping the removal of etcd membership")
+		// // Note: Removing the etcd member will lead to the etcd and the kube-apiserver Pod on the Machine shutting down.
+		// if err := workloadCluster.RemoveEtcdMemberForMachine(ctx, deletingMachine); err != nil {
+		// 	return ctrl.Result{}, errors.Wrapf(err, "failed to remove etcd member for deleting Machine %s", klog.KObj(deletingMachine))
+		// }
 	}
 
 	if err := r.removePreTerminateHookAnnotationFromMachine(ctx, deletingMachine); err != nil {
