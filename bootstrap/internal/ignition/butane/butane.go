@@ -18,6 +18,7 @@ package butane
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -274,4 +275,26 @@ func Render(input *cloudinit.BaseUserData, butaneCfg *bootstrapv1.AdditionalUser
 	}
 
 	return userData, nil
+}
+
+func EncaspulateGzippedConfig(gzippedConfig []byte) ([]byte, error) {
+	comp := "gzip"
+	dataSource := fmt.Sprintf("data:text/plain;base64,%s", base64.StdEncoding.EncodeToString(gzippedConfig))
+
+	encapCfg := ignitionTypes.Config{
+		Ignition: ignitionTypes.Ignition{
+			Version: "3.3.0",
+			Config: ignitionTypes.IgnitionConfig{
+				Replace: ignitionTypes.Resource{
+					Compression: &comp,
+					Source:      &dataSource,
+				},
+			},
+		},
+	}
+	cfg, err := json.Marshal(encapCfg)
+	if err != nil {
+		return nil, errors.Wrap(err, "marshaling Ignition config into JSON")
+	}
+	return cfg, nil
 }
